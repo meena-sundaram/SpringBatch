@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns = "http://www.springframework.org/schema/beans" 
+   xmlns:batch = "http://www.springframework.org/schema/batch" 
+   xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance" 
+   xmlns:util = "http://www.springframework.org/schema/util" 
+   xsi:schemaLocation = "http://www.springframework.org/schema/batch 
+   
+      http://www.springframework.org/schema/batch/spring-batch-2.2.xsd 
+      http://www.springframework.org/schema/beans 
+      http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">  
+   <import resource = "/Context1.xml" />  
+   <bean id = "tut" class = "batchtest.Employee" scope = "prototype" /> 
+   <bean id = "itemProcessor" class = "batchtest.Processor1" />  
+   <!-- job name -->
+   <!-- number of items that will be processed 
+   before the transaction is committed. -->
+	<!-- after 10 write it is commited. expensive!! -->
+   
+   <batch:job id = "helloWorldJob"> 
+      <batch:step id = "step1"> 
+         <batch:tasklet> 
+            <batch:chunk reader = "mysqlItemReader" 
+               writer = "flatFileItemWriter" 
+               processor = "itemProcessor" 
+               commit-interval = "10"> 
+            </batch:chunk> 
+         </batch:tasklet> 
+      </batch:step> 
+   </batch:job> 
+   
+      <bean id = "mysqlItemReader" 
+      class = "org.springframework.batch.item.database.JdbcCursorItemReader" > 
+      <property name = "dataSource" ref = "dataSource" /> 
+      <property name = "sql" value = "select eno1,name,salary from test.emp1" /> 
+      <property name = "rowMapper">  
+         <bean class = "batchtest.RowMapper" /> 
+      </property> 
+   </bean>
+   
+   <bean id = "flatFileItemWriter" 
+      class = " org.springframework.batch.item.file.FlatFileItemWriter">      
+      <property name = "resource" value = "file:target/outputfiles/employee_output1.txt"/> 
+      <!-- responsible of creating the line that is
+       written to the target file.  -->
+      <property name = "lineAggregator"> 
+         <bean class = " org.springframework.batch.item.file.transform.PassThroughLineAggregator"/> 
+      </property> 
+   </bean> 
+
+</beans>
